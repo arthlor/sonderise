@@ -1,0 +1,62 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="Page not found">
+	<div class="not-found">
+		<p class="section-marker">Archive Error</p>
+		<h1>404</h1>
+		<p>The page you're looking for doesn't exist.</p>
+		<a href="/">Go back home</a>
+	</div>
+</Base>
+
+<style>
+	.not-found {
+		text-align: center;
+		padding: var(--spacing-24) var(--spacing-6);
+		max-width: 44rem;
+		margin: 0 auto;
+	}
+
+	.section-marker {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+	}
+
+	.not-found h1 {
+		font-size: clamp(5rem, 15vw, 8rem);
+		margin: var(--spacing-3) 0 var(--spacing-2);
+		color: var(--color-border);
+	}
+
+	.not-found p {
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-6);
+	}
+
+	.not-found a {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.8rem 1rem;
+		border: 1px solid var(--color-text);
+		background: var(--color-text);
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wide);
+		color: var(--color-bg);
+	}
+
+	.not-found a:hover {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		color: var(--color-on-accent);
+	}
+</style>

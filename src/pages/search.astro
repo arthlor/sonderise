@@ -1,0 +1,255 @@
+---
+export const prerender = false;
+
+import { search as searchContent } from "emdash";
+import Base from "../layouts/Base.astro";
+
+const query = Astro.url.searchParams.get("q")?.trim() || "";
+const searchResult = query
+	? await searchContent(query, {
+			collections: ["posts", "pages"],
+			status: "published",
+			limit: 20,
+		})
+	: { items: [] };
+
+const results = searchResult.items;
+const resultCount = results.length;
+
+function getResultHref(result: (typeof results)[number]) {
+	const slug = result.slug || result.id;
+	return result.collection === "pages" ? `/pages/${slug}` : `/posts/${slug}`;
+}
+---
+
+<Base
+	title={query ? `Search results for “${query}”` : "Search the archive"}
+	description="Search across posts and pages"
+>
+	<section class="search-page">
+		<header class="search-header">
+			<p class="section-marker">Archive Search</p>
+			<h1 class="search-title">Search the edition</h1>
+			<p class="search-description">
+				Look through posts and pages using EmDash’s indexed search.
+			</p>
+		</header>
+
+		<form method="get" action="/search" class="search-form">
+			<input
+				type="search"
+				name="q"
+				value={query}
+				placeholder="Search stories, sections, and pages"
+				class="search-input"
+				autofocus
+			/>
+			<button type="submit" class="search-button">Search</button>
+		</form>
+
+		{
+			query ? (
+				<div class="search-results-block">
+					<p class="search-summary">
+						{resultCount === 0
+							? `No results for “${query}”`
+							: `${resultCount} result${resultCount === 1 ? "" : "s"} for “${query}”`}
+					</p>
+
+					{
+						results.length > 0 && (
+							<div class="search-results">
+								{results.map((result) => (
+									<article class="search-result">
+										<div class="search-result__meta">
+											<span>{result.collection}</span>
+										</div>
+										<a href={getResultHref(result)} class="search-result__title-link">
+											<h2 class="search-result__title">{result.title}</h2>
+										</a>
+										{
+											result.snippet && (
+												<p class="search-result__snippet" set:html={result.snippet} />
+											)
+										}
+									</article>
+								))}
+							</div>
+						)
+					}
+				</div>
+			) : (
+				<div class="search-empty">
+					<p>Try a headline, a topic, or a phrase from the body copy.</p>
+					<ul>
+						<li>Search collection titles and indexed content</li>
+						<li>Jump into pages as well as posts</li>
+						<li>Use the site-wide search in the masthead with Cmd/Ctrl + K</li>
+					</ul>
+				</div>
+			)
+		}
+	</section>
+</Base>
+
+<style>
+	.search-page {
+		max-width: 56rem;
+		margin: 0 auto;
+		padding: var(--spacing-10) var(--spacing-6) var(--spacing-16);
+	}
+
+	.section-marker,
+	.search-summary,
+	.search-result__meta,
+	.search-empty li {
+		font-family: var(--font-sans);
+	}
+
+	.section-marker,
+	.search-summary,
+	.search-result__meta {
+		font-size: var(--font-size-xs);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+	}
+
+	.search-header {
+		position: relative;
+		padding-top: var(--spacing-6);
+		margin-bottom: var(--spacing-8);
+	}
+
+	.search-header::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: var(--rule-thick);
+		background: var(--color-border);
+	}
+
+	.search-title {
+		font-size: clamp(2.9rem, 7vw, 4.8rem);
+		line-height: 0.92;
+		margin: var(--spacing-3) 0 var(--spacing-2);
+	}
+
+	.search-description {
+		max-width: 38rem;
+		font-size: var(--font-size-lg);
+		color: var(--color-text-secondary);
+	}
+
+	.search-form {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: var(--spacing-3);
+		align-items: center;
+		margin-bottom: var(--spacing-8);
+	}
+
+	.search-input {
+		width: 100%;
+		padding: 0.95rem 1rem;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		color: var(--color-text);
+		font-family: var(--font-sans);
+		font-size: var(--font-size-base);
+	}
+
+	.search-input:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 3px var(--color-accent-ring);
+	}
+
+	.search-button {
+		padding: 0.95rem 1.2rem;
+		border: 1px solid var(--color-text);
+		background: var(--color-text);
+		color: var(--color-bg);
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wide);
+		cursor: pointer;
+	}
+
+	.search-button:hover {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		color: var(--color-on-accent);
+	}
+
+	.search-results {
+		display: grid;
+		gap: var(--spacing-5);
+	}
+
+	.search-result {
+		padding-top: var(--spacing-5);
+		border-top: 1px solid var(--color-border);
+	}
+
+	.search-result__meta {
+		margin-bottom: var(--spacing-2);
+	}
+
+	.search-result__title {
+		font-size: clamp(1.8rem, 4vw, 2.7rem);
+		line-height: 0.97;
+		margin-bottom: var(--spacing-2);
+		color: var(--color-text);
+	}
+
+	.search-result__title-link:hover .search-result__title {
+		color: var(--color-accent);
+	}
+
+	.search-result__snippet {
+		color: var(--color-text-secondary);
+	}
+
+	.search-result__snippet :global(mark) {
+		background: transparent;
+		color: var(--color-accent);
+		font-weight: 700;
+	}
+
+	.search-empty {
+		padding: var(--spacing-6);
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	.search-empty p {
+		margin-bottom: var(--spacing-4);
+		color: var(--color-text-secondary);
+	}
+
+	.search-empty ul {
+		padding-left: 1.2rem;
+	}
+
+	.search-empty li {
+		margin-bottom: var(--spacing-2);
+		color: var(--color-text-secondary);
+	}
+
+	@media (max-width: 640px) {
+		.search-page {
+			padding-left: var(--spacing-4);
+			padding-right: var(--spacing-4);
+		}
+
+		.search-form {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

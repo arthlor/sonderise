@@ -1,0 +1,74 @@
+:root {
+	--theme-color-bg: #f5eee1;
+	--theme-color-bg-subtle: #e8decb;
+	--theme-color-text: #16110d;
+	--theme-color-text-secondary: #4e4539;
+	--theme-color-muted: #6f6659;
+	--theme-color-border: #c8b593;
+	--theme-color-border-subtle: #ddd1b9;
+	--theme-color-surface: #fbf7ef;
+	--theme-color-accent: #8f2f1f;
+	--theme-color-accent-hover: #6f2216;
+	--theme-color-on-accent: #fff9ef;
+	--theme-color-accent-ring: color-mix(
+		in srgb,
+		var(--theme-color-accent) 28%,
+		transparent
+	);
+
+	--theme-font-sans: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+	--theme-font-serif: "Source Serif 4", Georgia, serif;
+	--theme-font-display: "Cormorant Garamond", "Times New Roman", serif;
+	--theme-font-mono: "IBM Plex Mono", "SFMono-Regular", monospace;
+
+	--theme-font-size-xs: 0.79rem;
+	--theme-font-size-sm: 0.93rem;
+	--theme-font-size-base: 1.05rem;
+	--theme-font-size-lg: 1.22rem;
+	--theme-font-size-xl: 1.55rem;
+	--theme-font-size-2xl: 2rem;
+	--theme-font-size-3xl: 2.75rem;
+	--theme-font-size-4xl: 3.6rem;
+	--theme-font-size-5xl: 4.85rem;
+
+	--theme-leading-tight: 0.98;
+	--theme-leading-snug: 1.18;
+	--theme-leading-normal: 1.52;
+	--theme-leading-relaxed: 1.74;
+
+	--theme-tracking-tight: -0.04em;
+	--theme-tracking-snug: -0.025em;
+	--theme-tracking-wide: 0.08em;
+	--theme-tracking-wider: 0.15em;
+
+	--theme-content-width: 740px;
+	--theme-wide-width: 1280px;
+	--theme-gutter-width: 250px;
+	--theme-meta-col-width: 210px;
+	--theme-nav-height: 72px;
+	--theme-search-input-width: 180px;
+	--theme-radius: 0px;
+	--theme-radius-lg: 14px;
+	--theme-rule-thick: 3px;
+	--theme-shadow-dropdown: 0 22px 48px rgba(26, 17, 8, 0.16);
+	--theme-shadow-btn-active: 0 1px 3px rgba(21, 13, 6, 0.12);
+}
+
+:root.dark {
+	--theme-dark-color-bg: #14100c;
+	--theme-dark-color-bg-subtle: #1b1611;
+	--theme-dark-color-text: #f3ece0;
+	--theme-dark-color-text-secondary: #d5c7b0;
+	--theme-dark-color-muted: #9f8d76;
+	--theme-dark-color-border: #4a3a29;
+	--theme-dark-color-border-subtle: #36291d;
+	--theme-dark-color-surface: #211912;
+	--theme-dark-color-accent: #d9735e;
+	--theme-dark-color-accent-hover: #ef8b78;
+	--theme-dark-color-on-accent: #1a120d;
+	--theme-dark-color-accent-ring: color-mix(
+		in srgb,
+		var(--theme-dark-color-accent) 30%,
+		transparent
+	);
+}

@@ -1,0 +1,137 @@
+---
+import { getTerm, getEmDashCollection, getEntryTerms } from "emdash";
+import Base from "../../layouts/Base.astro";
+import PostCard from "../../components/PostCard.astro";
+import { getReadingTime } from "../../utils/reading-time";
+
+const { slug } = Astro.params;
+const term = slug ? await getTerm("tag", slug) : null;
+
+if (!term) {
+	return Astro.redirect("/404");
+}
+
+const { entries: posts, cacheHint } = await getEmDashCollection("posts", {
+	where: { tag: term.slug },
+	orderBy: { published_at: "desc" },
+});
+
+Astro.cache.set(cacheHint);
+
+const filteredPosts = await Promise.all(
+	posts.map(async (post) => {
+		const tags = await getEntryTerms("posts", post.data.id, "tag");
+		return {
+			post,
+			tags: tags.map((tag) => ({ slug: tag.slug, label: tag.label })),
+			bylines: post.data.bylines ?? [],
+			readingTime: getReadingTime(post.data.content),
+		};
+	})
+);
+---
+
+<Base
+	title={`Stories tagged ${term.label}`}
+	description={`Reporting tagged with ${term.label}`}
+>
+	<section class="archive-section">
+		<header class="archive-header">
+			<p class="section-marker">Tag Archive</p>
+			<h1 class="archive-title">{term.label}</h1>
+			<p class="archive-count">
+				{filteredPosts.length} stor{filteredPosts.length === 1 ? "y" : "ies"} with
+				this topic.
+			</p>
+		</header>
+
+		{
+			filteredPosts.length === 0 ? (
+				<p class="no-posts">No stories are tagged with this topic yet.</p>
+			) : (
+				<div class="posts-grid">
+					{filteredPosts.map((story) => (
+						<PostCard
+							title={story.post.data.title}
+							excerpt={story.post.data.excerpt}
+							featuredImage={story.post.data.featured_image}
+							href={`/posts/${story.post.id}`}
+							date={story.post.data.publishedAt ?? undefined}
+							readingTime={story.readingTime}
+							tags={story.tags}
+							bylines={story.bylines}
+						/>
+					))}
+				</div>
+			)
+		}
+	</section>
+</Base>
+
+<style>
+	.archive-section {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-10) var(--spacing-6) var(--spacing-16);
+	}
+
+	.section-marker {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+	}
+
+	.archive-header {
+		position: relative;
+		padding-top: var(--spacing-6);
+		margin-bottom: var(--spacing-8);
+	}
+
+	.archive-header::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: var(--rule-thick);
+		background: var(--color-border);
+	}
+
+	.archive-title {
+		font-size: clamp(3rem, 7vw, 5rem);
+		line-height: 0.92;
+		margin: var(--spacing-3) 0 var(--spacing-2);
+	}
+
+	.archive-count,
+	.no-posts {
+		font-size: var(--font-size-lg);
+		color: var(--color-text-secondary);
+	}
+
+	.posts-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--spacing-8) var(--spacing-6);
+	}
+
+	@media (max-width: 960px) {
+		.posts-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 640px) {
+		.archive-section {
+			padding-left: var(--spacing-4);
+			padding-right: var(--spacing-4);
+		}
+
+		.posts-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

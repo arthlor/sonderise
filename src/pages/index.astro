@@ -1,0 +1,753 @@
+---
+import {
+	getEmDashCollection,
+	getEntryTerms,
+	getSection,
+	getSiteSettings,
+	getTaxonomyTerms,
+} from "emdash";
+import { Image, PortableText } from "emdash/ui";
+import Base from "../layouts/Base.astro";
+import PostCard from "../components/PostCard.astro";
+import { getReadingTime } from "../utils/reading-time";
+
+const siteSettings = await getSiteSettings();
+const siteTitle = siteSettings.title?.trim() || "The Sonderise Chronicle";
+const siteTagline =
+	siteSettings.tagline?.trim() ||
+	"Independent dispatches on design, systems, and digital culture.";
+
+const { entries: posts, cacheHint } = await getEmDashCollection("posts", {
+	orderBy: { published_at: "desc" },
+});
+
+Astro.cache.set(cacheHint);
+
+const sortedPosts = posts.toSorted((a, b) => {
+	const dateA = a.data.publishedAt?.getTime() ?? 0;
+	const dateB = b.data.publishedAt?.getTime() ?? 0;
+	return dateB - dateA;
+});
+
+const stories = await Promise.all(
+	sortedPosts.map(async (post) => {
+		const [tags, categories] = await Promise.all([
+			getEntryTerms("posts", post.data.id, "tag"),
+			getEntryTerms("posts", post.data.id, "category"),
+		]);
+
+		return {
+			post,
+			tags: tags.map((tag) => ({ slug: tag.slug, label: tag.label })),
+			categories: categories.map((category) => ({
+				slug: category.slug,
+				label: category.label,
+			})),
+			bylines: post.data.bylines ?? [],
+			readingTime: getReadingTime(post.data.content),
+		};
+	})
+);
+
+const leadStory = stories[0] ?? null;
+const supportingStories = stories.slice(1, 3);
+const briefingStories = stories.slice(3, 7);
+const archiveStories = stories.slice(7, 11);
+
+const categoryTerms = await getTaxonomyTerms("category");
+const desks = categoryTerms
+	.map((term) => ({
+		term,
+		stories: stories
+			.filter((story) =>
+				story.categories.some((category) => category.slug === term.slug)
+			)
+			.slice(0, 3),
+	}))
+	.filter((desk) => desk.stories.length > 0)
+	.slice(0, 3);
+
+const newsletterSection = await getSection("newsletter-signup");
+
+function formatDate(date: Date | null | undefined) {
+	if (!date) return null;
+	return date.toLocaleDateString("en-US", {
+		month: "long",
+		day: "numeric",
+		year: "numeric",
+	});
+}
+---
+
+<Base title={siteTitle} description={siteTagline}>
+	{
+		stories.length === 0 ? (
+			<section class="empty-state">
+				<p class="section-marker">Front Page</p>
+				<h1>No stories on the wire yet</h1>
+				<p>Open the newsroom and publish your first post to print today’s edition.</p>
+				<a href="/_emdash/admin/content/posts/new" class="empty-state__link">
+					Start writing
+				</a>
+			</section>
+		) : (
+			<div class="home-content">
+				<section class="front-page">
+					{
+						leadStory && (
+							<div class="front-page__lead">
+								<p class="section-marker">Front Page</p>
+								<div class="story-kickers">
+									{leadStory.categories.slice(0, 2).map((category) => (
+										<a href={`/category/${category.slug}`}>{category.label}</a>
+									))}
+								</div>
+								<div class="lead-story">
+									{
+										leadStory.post.data.featured_image && (
+											<a
+												href={`/posts/${leadStory.post.id}`}
+												class="lead-story__media"
+											>
+												<Image image={leadStory.post.data.featured_image} />
+											</a>
+										)
+									}
+
+									<div class="lead-story__body">
+										<div class="story-meta">
+											{leadStory.bylines[0] && (
+												<span>{leadStory.bylines[0].byline.displayName}</span>
+											)}
+											{leadStory.bylines[0] &&
+												leadStory.post.data.publishedAt && <span>•</span>}
+											{leadStory.post.data.publishedAt && (
+												<time>{formatDate(leadStory.post.data.publishedAt)}</time>
+											)}
+											<span>•</span>
+											<span>{leadStory.readingTime} min read</span>
+										</div>
+
+										<a
+											href={`/posts/${leadStory.post.id}`}
+											class="lead-story__title-link"
+										>
+											<h1 class="lead-story__title">
+												{leadStory.post.data.title}
+											</h1>
+										</a>
+
+										{leadStory.post.data.excerpt && (
+											<p class="lead-story__excerpt">
+												{leadStory.post.data.excerpt}
+											</p>
+										)}
+
+										{
+											leadStory.tags.length > 0 && (
+												<div class="lead-story__tags">
+													{leadStory.tags.slice(0, 3).map((tag) => (
+														<a href={`/tag/${tag.slug}`}>{tag.label}</a>
+													))}
+												</div>
+											)
+										}
+									</div>
+								</div>
+							</div>
+						)
+					}
+
+					<div class="front-page__column">
+						<header class="column-header">
+							<p class="section-marker">Featured Dispatches</p>
+							<a href="/posts">Open archive</a>
+						</header>
+
+						<div class="supporting-stories">
+							{supportingStories.map((story) => (
+								<article class="supporting-story">
+									<div class="story-kickers">
+										{story.categories.slice(0, 1).map((category) => (
+											<a href={`/category/${category.slug}`}>{category.label}</a>
+										))}
+									</div>
+									<a
+										href={`/posts/${story.post.id}`}
+										class="supporting-story__title-link"
+									>
+										<h2 class="supporting-story__title">{story.post.data.title}</h2>
+									</a>
+									{story.post.data.excerpt && (
+										<p class="supporting-story__excerpt">
+											{story.post.data.excerpt}
+										</p>
+									)}
+									<div class="story-meta">
+										{story.post.data.publishedAt && (
+											<time>{formatDate(story.post.data.publishedAt)}</time>
+										)}
+										<span>•</span>
+										<span>{story.readingTime} min read</span>
+									</div>
+								</article>
+							))}
+						</div>
+					</div>
+
+					<aside class="front-page__briefing">
+						<div class="briefing-card">
+							<p class="section-marker">Morning Briefing</p>
+							<h2 class="briefing-card__title">What else is making the edition</h2>
+							<ol class="briefing-list">
+								{briefingStories.map((story) => (
+									<li class="briefing-item">
+										<div class="story-kickers">
+											{story.categories.slice(0, 1).map((category) => (
+												<a href={`/category/${category.slug}`}>{category.label}</a>
+											))}
+										</div>
+										<a href={`/posts/${story.post.id}`} class="briefing-item__link">
+											{story.post.data.title}
+										</a>
+										<div class="story-meta">
+											{story.post.data.publishedAt && (
+												<time>{formatDate(story.post.data.publishedAt)}</time>
+											)}
+										</div>
+									</li>
+								))}
+							</ol>
+							<a href="/posts" class="briefing-card__cta">
+								Read the full archive
+							</a>
+						</div>
+					</aside>
+				</section>
+
+				{
+					desks.length > 0 && (
+						<section class="news-desks">
+							{desks.map((desk) => (
+								<section class="news-desk">
+									<header class="news-desk__header">
+										<p class="section-marker">{desk.term.label}</p>
+										<a href={`/category/${desk.term.slug}`}>View section</a>
+									</header>
+
+									{
+										desk.stories[0] && (
+											<article class="desk-feature">
+												<a
+													href={`/posts/${desk.stories[0].post.id}`}
+													class="desk-feature__title-link"
+												>
+													<h2 class="desk-feature__title">
+														{desk.stories[0].post.data.title}
+													</h2>
+												</a>
+												{desk.stories[0].post.data.excerpt && (
+													<p class="desk-feature__excerpt">
+														{desk.stories[0].post.data.excerpt}
+													</p>
+												)}
+											</article>
+										)
+									}
+
+									<ul class="desk-list">
+										{desk.stories.slice(1).map((story) => (
+											<li class="desk-list__item">
+												<a href={`/posts/${story.post.id}`}>{story.post.data.title}</a>
+												<div class="story-meta">
+													{story.post.data.publishedAt && (
+														<time>{formatDate(story.post.data.publishedAt)}</time>
+													)}
+												</div>
+											</li>
+										))}
+									</ul>
+								</section>
+							))}
+						</section>
+					)
+				}
+
+				{
+					newsletterSection && (
+						<section class="newsletter-panel">
+							<div class="newsletter-panel__inner">
+								<div>
+									<p class="section-marker">Newsletter Section</p>
+									{newsletterSection.title && (
+										<h2 class="newsletter-panel__title">
+											{newsletterSection.title}
+										</h2>
+									)}
+								</div>
+								<div class="newsletter-panel__content">
+									<PortableText value={newsletterSection.content} />
+									<a href="/posts" class="newsletter-panel__link">
+										Catch up on recent reporting
+									</a>
+								</div>
+							</div>
+						</section>
+					)
+				}
+
+				{
+					archiveStories.length > 0 && (
+						<section class="reading-grid">
+							<header class="reading-grid__header">
+								<p class="section-marker">From the Archive</p>
+								<h2>More stories from the newsroom</h2>
+							</header>
+
+							<div class="reading-grid__cards">
+								{archiveStories.map((story) => (
+									<PostCard
+										title={story.post.data.title ?? "Untitled"}
+										excerpt={story.post.data.excerpt}
+										featuredImage={story.post.data.featured_image}
+										href={`/posts/${story.post.id}`}
+										date={story.post.data.publishedAt ?? undefined}
+										readingTime={story.readingTime}
+										tags={story.tags}
+										bylines={story.bylines}
+									/>
+								))}
+							</div>
+						</section>
+					)
+				}
+			</div>
+		)
+	}
+</Base>
+
+<style>
+	.home-content {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-10) var(--spacing-6) 0;
+	}
+
+	.section-marker {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+	}
+
+	.story-kickers {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-2);
+		margin-bottom: var(--spacing-3);
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wide);
+	}
+
+	.story-kickers a {
+		color: var(--color-accent);
+	}
+
+	.story-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--spacing-2);
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wide);
+		color: var(--color-muted);
+	}
+
+	.front-page {
+		display: grid;
+		grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.9fr) minmax(260px, 0.7fr);
+		gap: var(--spacing-8);
+		align-items: start;
+	}
+
+	.front-page__lead,
+	.front-page__column,
+	.front-page__briefing,
+	.news-desk,
+	.newsletter-panel,
+	.reading-grid {
+		position: relative;
+	}
+
+	.front-page__lead::before,
+	.front-page__column::before,
+	.front-page__briefing::before,
+	.news-desk::before,
+	.reading-grid::before {
+		content: "";
+		position: absolute;
+		top: -0.85rem;
+		left: 0;
+		right: 0;
+		height: var(--rule-thick);
+		background: var(--color-border);
+	}
+
+	.front-page__lead,
+	.front-page__column,
+	.front-page__briefing {
+		padding-top: var(--spacing-6);
+	}
+
+	.lead-story {
+		display: grid;
+		gap: var(--spacing-5);
+	}
+
+	.lead-story__media {
+		display: block;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		overflow: hidden;
+	}
+
+	.lead-story__media img {
+		width: 100%;
+		aspect-ratio: 16 / 10;
+		object-fit: cover;
+		transition: transform var(--transition-base);
+	}
+
+	.lead-story__media:hover img {
+		transform: scale(1.02);
+	}
+
+	.lead-story__title {
+		font-size: clamp(2.9rem, 5vw, 5rem);
+		line-height: 0.94;
+		margin: var(--spacing-3) 0;
+		color: var(--color-text);
+	}
+
+	.lead-story__title-link:hover .lead-story__title {
+		color: var(--color-accent);
+	}
+
+	.lead-story__excerpt {
+		max-width: 50rem;
+		font-size: var(--font-size-lg);
+		color: var(--color-text-secondary);
+	}
+
+	.lead-story__tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-2);
+		margin-top: var(--spacing-5);
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wide);
+	}
+
+	.lead-story__tags a {
+		padding: 0.45rem 0.7rem;
+		border: 1px solid var(--color-border);
+		background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+		color: var(--color-text-secondary);
+	}
+
+	.column-header,
+	.news-desk__header,
+	.reading-grid__header {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--spacing-4);
+		margin-bottom: var(--spacing-5);
+	}
+
+	.column-header a,
+	.news-desk__header a {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wide);
+		color: var(--color-text-secondary);
+	}
+
+	.supporting-stories {
+		display: grid;
+		gap: var(--spacing-5);
+	}
+
+	.supporting-story {
+		padding-bottom: var(--spacing-5);
+		border-bottom: 1px solid var(--color-border-subtle);
+	}
+
+	.supporting-story:last-child {
+		border-bottom: none;
+		padding-bottom: 0;
+	}
+
+	.supporting-story__title {
+		font-size: clamp(1.85rem, 3vw, 2.35rem);
+		line-height: 0.98;
+		margin-bottom: var(--spacing-3);
+		color: var(--color-text);
+	}
+
+	.supporting-story__title-link:hover .supporting-story__title {
+		color: var(--color-accent);
+	}
+
+	.supporting-story__excerpt {
+		margin-bottom: var(--spacing-3);
+		color: var(--color-text-secondary);
+	}
+
+	.briefing-card {
+		padding: var(--spacing-5);
+		border: 1px solid var(--color-border);
+		background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+	}
+
+	.briefing-card__title {
+		font-size: clamp(1.9rem, 3vw, 2.5rem);
+		line-height: 0.98;
+		margin: var(--spacing-3) 0 var(--spacing-5);
+	}
+
+	.briefing-list {
+		display: grid;
+		gap: var(--spacing-4);
+		margin: 0;
+		padding-left: 1.25rem;
+	}
+
+	.briefing-item {
+		padding-bottom: var(--spacing-4);
+		border-bottom: 1px solid var(--color-border-subtle);
+	}
+
+	.briefing-item:last-child {
+		border-bottom: none;
+		padding-bottom: 0;
+	}
+
+	.briefing-item__link {
+		display: block;
+		margin-bottom: var(--spacing-2);
+		font-family: var(--font-display);
+		font-size: var(--font-size-xl);
+		line-height: 1.02;
+		color: var(--color-text);
+	}
+
+	.briefing-item__link:hover {
+		color: var(--color-accent);
+	}
+
+	.briefing-card__cta,
+	.newsletter-panel__link,
+	.empty-state__link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		margin-top: var(--spacing-5);
+		padding: 0.75rem 1rem;
+		border: 1px solid var(--color-text);
+		background: var(--color-text);
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wide);
+		color: var(--color-bg);
+	}
+
+	.briefing-card__cta:hover,
+	.newsletter-panel__link:hover,
+	.empty-state__link:hover {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		color: var(--color-on-accent);
+	}
+
+	.news-desks {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--spacing-8);
+		margin-top: var(--spacing-12);
+	}
+
+	.news-desk {
+		padding-top: var(--spacing-6);
+	}
+
+	.desk-feature__title {
+		font-size: clamp(1.7rem, 2.2vw, 2.2rem);
+		line-height: 0.98;
+		margin-bottom: var(--spacing-3);
+		color: var(--color-text);
+	}
+
+	.desk-feature__title-link:hover .desk-feature__title {
+		color: var(--color-accent);
+	}
+
+	.desk-feature__excerpt {
+		color: var(--color-text-secondary);
+	}
+
+	.desk-list {
+		list-style: none;
+		margin-top: var(--spacing-5);
+	}
+
+	.desk-list__item {
+		padding: var(--spacing-4) 0;
+		border-top: 1px solid var(--color-border-subtle);
+	}
+
+	.desk-list__item a {
+		display: block;
+		margin-bottom: var(--spacing-2);
+		font-family: var(--font-display);
+		font-size: var(--font-size-xl);
+		line-height: 1.04;
+		color: var(--color-text);
+	}
+
+	.desk-list__item a:hover {
+		color: var(--color-accent);
+	}
+
+	.newsletter-panel {
+		margin-top: var(--spacing-12);
+		padding-top: var(--spacing-6);
+	}
+
+	.newsletter-panel::before {
+		content: "";
+		position: absolute;
+		top: -0.85rem;
+		left: 0;
+		right: 0;
+		height: var(--rule-thick);
+		background: var(--color-border);
+	}
+
+	.newsletter-panel__inner {
+		display: grid;
+		grid-template-columns: minmax(0, 0.55fr) minmax(0, 1fr);
+		gap: var(--spacing-8);
+		padding: var(--spacing-8);
+		border: 1px solid var(--color-border);
+		background:
+			linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--color-accent) 7%, var(--color-surface)),
+				var(--color-surface)
+			);
+	}
+
+	.newsletter-panel__title {
+		font-size: clamp(2rem, 3vw, 3rem);
+		line-height: 0.98;
+		margin-top: var(--spacing-3);
+	}
+
+	.newsletter-panel__content {
+		font-size: var(--font-size-lg);
+	}
+
+	.newsletter-panel__content :global(p:last-of-type) {
+		margin-bottom: 0;
+	}
+
+	.reading-grid {
+		margin-top: var(--spacing-12);
+		padding-top: var(--spacing-6);
+		padding-bottom: var(--spacing-16);
+	}
+
+	.reading-grid__header h2 {
+		font-size: clamp(2.2rem, 4vw, 3.3rem);
+		line-height: 0.96;
+	}
+
+	.reading-grid__cards {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: var(--spacing-6);
+	}
+
+	.empty-state {
+		max-width: 54rem;
+		margin: 0 auto;
+		padding: var(--spacing-16) var(--spacing-6);
+		text-align: center;
+	}
+
+	.empty-state h1 {
+		font-size: clamp(2.8rem, 6vw, 4.5rem);
+		margin: var(--spacing-4) 0 var(--spacing-3);
+	}
+
+	.empty-state p {
+		color: var(--color-text-secondary);
+	}
+
+	@media (max-width: 1100px) {
+		.front-page {
+			grid-template-columns: minmax(0, 1fr) minmax(280px, 0.7fr);
+		}
+
+		.front-page__column {
+			grid-column: 1 / -1;
+		}
+
+		.news-desks,
+		.reading-grid__cards {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.newsletter-panel__inner {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 780px) {
+		.home-content {
+			padding-left: var(--spacing-4);
+			padding-right: var(--spacing-4);
+		}
+
+		.front-page,
+		.news-desks,
+		.reading-grid__cards {
+			grid-template-columns: 1fr;
+		}
+
+		.column-header,
+		.news-desk__header,
+		.reading-grid__header {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.reading-grid__header h2 {
+			font-size: clamp(2rem, 9vw, 2.75rem);
+		}
+	}
+</style>
