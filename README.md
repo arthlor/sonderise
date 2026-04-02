@@ -13,7 +13,7 @@ The default seed ships as **The Sonderise Chronicle**: a warm editorial layout w
 - Search page backed by EmDash indexed search
 - RSS feed that reads branding from EmDash site settings
 - Token-driven palette and typography in a dedicated theme file
-- Cloudflare-ready EmDash setup with forms and webhook notifier plugins
+- Cloudflare-ready EmDash setup that deploys on standard Workers Builds with forms and webhook notifier plugins
 
 ## EmDash Integration
 
@@ -135,6 +135,23 @@ If you deploy from the Cloudflare dashboard using Git:
 
 After that, pushes to your production branch will deploy your own copy of the
 theme instead of the default `sonderise` resources.
+
+### Optional: enable sandboxed marketplace plugins later
+
+This template ships with the broadest Cloudflare-compatible setup by default:
+the forms and webhook notifier plugins run as normal trusted EmDash plugins, so
+the project deploys without Cloudflare Dynamic Workers.
+
+If your Cloudflare account supports Dynamic Workers / Worker Loaders and you
+want EmDash marketplace plugins later, you can opt back into that flow by:
+
+1. adding `sandbox()` back in `astro.config.mjs`
+2. adding `sandboxRunner` and `marketplace` back to the `emdash()` config
+3. re-exporting `PluginBridge` from `src/worker.ts`
+4. restoring the `worker_loaders` binding in `wrangler.jsonc`
+
+Keep that as an explicit opt-in, since the default template is meant to deploy
+cleanly for forked projects without beta-only Cloudflare features.
 
 ## Customizing The Theme
 
