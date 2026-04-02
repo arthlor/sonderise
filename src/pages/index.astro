@@ -10,7 +10,6 @@ import { Image, PortableText } from "emdash/ui";
 import Base from "../layouts/Base.astro";
 import PostCard from "../components/PostCard.astro";
 import { getReadingTime } from "../utils/reading-time";
-import { getDwTopStories } from "../utils/dw-wire";
 
 const siteSettings = await getSiteSettings();
 const siteTitle = siteSettings.title?.trim() || "The Sonderise Chronicle";
@@ -69,12 +68,7 @@ const desks = categoryTerms
 	.filter((desk) => desk.stories.length > 0)
 	.slice(0, 3);
 
-const [newsletterSection, worldWire] = await Promise.all([
-	getSection("newsletter-signup"),
-	getDwTopStories(6),
-]);
-const worldWireLead = worldWire.items[0] ?? null;
-const worldWireItems = worldWire.items.slice(1);
+const newsletterSection = await getSection("newsletter-signup");
 
 function formatDate(date: Date | null | undefined) {
 	if (!date) return null;
@@ -83,18 +77,6 @@ function formatDate(date: Date | null | undefined) {
 		day: "numeric",
 		year: "numeric",
 	});
-}
-
-function formatFeedDate(
-	value: string | null | undefined,
-	options: Intl.DateTimeFormatOptions
-) {
-	if (!value) return null;
-
-	const date = new Date(value);
-	if (Number.isNaN(date.valueOf())) return null;
-
-	return date.toLocaleString("en-US", options);
 }
 ---
 
@@ -268,168 +250,6 @@ function formatFeedDate(
 				</section>
 
 				<div class="home-content__body">
-					{
-						worldWire.items.length > 0 && (
-							<section class="world-wire">
-								<header class="section-heading world-wire__header">
-									<div>
-										<p class="section-marker">World wire</p>
-										<h2>Live global headlines, pulled directly from DW.</h2>
-									</div>
-
-									<div class="world-wire__header-meta">
-										{
-											formatFeedDate(worldWire.updatedAt, {
-												month: "short",
-												day: "numeric",
-												hour: "numeric",
-												minute: "2-digit",
-											}) && (
-												<p>
-													Refreshed{" "}
-													{formatFeedDate(worldWire.updatedAt, {
-														month: "short",
-														day: "numeric",
-														hour: "numeric",
-														minute: "2-digit",
-													})}
-												</p>
-											)
-										}
-										<a
-											href={worldWire.source.websiteUrl}
-											target="_blank"
-											rel="noreferrer"
-										>
-											Open DW
-										</a>
-									</div>
-								</header>
-
-								<div class="world-wire__layout">
-									{
-										worldWireLead && (
-											<article class="world-wire__lead">
-												{
-													worldWireLead.topic && (
-														<p class="world-wire__topic">{worldWireLead.topic}</p>
-													)
-												}
-
-												<a
-													href={worldWireLead.link}
-													target="_blank"
-													rel="noreferrer"
-													class="world-wire__lead-link"
-												>
-													<h3 class="world-wire__lead-title">
-														{worldWireLead.title}
-													</h3>
-												</a>
-
-												{worldWireLead.summary && (
-													<p class="world-wire__lead-summary">
-														{worldWireLead.summary}
-													</p>
-												)}
-
-												<div class="story-meta">
-													{
-														formatFeedDate(worldWireLead.publishedAt, {
-															month: "short",
-															day: "numeric",
-															hour: "numeric",
-															minute: "2-digit",
-														}) && (
-															<>
-																<time datetime={worldWireLead.publishedAt ?? undefined}>
-																	{formatFeedDate(worldWireLead.publishedAt, {
-																		month: "short",
-																		day: "numeric",
-																		hour: "numeric",
-																		minute: "2-digit",
-																	})}
-																</time>
-																<span>•</span>
-															</>
-														)
-													}
-													<span>{worldWire.source.name}</span>
-												</div>
-
-												<a
-													href={worldWireLead.link}
-													target="_blank"
-													rel="noreferrer"
-													class="world-wire__cta"
-												>
-													Read on DW
-												</a>
-											</article>
-										)
-									}
-
-									{
-										worldWireItems.length > 0 && (
-											<ol class="world-wire__list">
-												{worldWireItems.map((item) => (
-													<li class="world-wire__item">
-														{
-															item.topic && (
-																<p class="world-wire__topic world-wire__topic--muted">
-																	{item.topic}
-																</p>
-															)
-														}
-														<a
-															href={item.link}
-															target="_blank"
-															rel="noreferrer"
-															class="world-wire__item-link"
-														>
-															<h3 class="world-wire__item-title">{item.title}</h3>
-														</a>
-														{item.summary && (
-															<p class="world-wire__item-summary">{item.summary}</p>
-														)}
-														<div class="story-meta">
-															{
-																formatFeedDate(item.publishedAt, {
-																	month: "short",
-																	day: "numeric",
-																	hour: "numeric",
-																	minute: "2-digit",
-																}) && (
-																	<>
-																		<time datetime={item.publishedAt ?? undefined}>
-																			{formatFeedDate(item.publishedAt, {
-																				month: "short",
-																				day: "numeric",
-																				hour: "numeric",
-																				minute: "2-digit",
-																			})}
-																		</time>
-																		<span>•</span>
-																	</>
-																)
-															}
-															<span>{worldWire.source.name}</span>
-														</div>
-													</li>
-												))}
-											</ol>
-										)
-									}
-								</div>
-
-								<p class="world-wire__attribution">
-									Headlines and summaries are pulled from the official DW RSS feed.
-									Full stories open on Deutsche Welle.
-								</p>
-							</section>
-						)
-					}
-
 					{
 						(briefingStories.length > 0 || desks.length > 0) && (
 							<section class="edition-layout">
@@ -1131,164 +951,6 @@ function formatFeedDate(
 		border-top: 2px solid color-mix(in srgb, var(--color-text) 10%, var(--color-border));
 	}
 
-	.world-wire {
-		position: relative;
-		overflow: hidden;
-		padding: clamp(1.6rem, 3vw, 2.5rem);
-		border: 1px solid color-mix(in srgb, var(--color-accent) 18%, var(--color-border));
-		border-radius: 2rem;
-		background:
-			radial-gradient(circle at top right, rgba(234, 106, 66, 0.14), transparent 24%),
-			linear-gradient(
-				180deg,
-				color-mix(in srgb, white 72%, var(--color-surface)),
-				color-mix(in srgb, var(--color-surface) 90%, transparent)
-			);
-		box-shadow: 0 24px 60px rgba(17, 18, 30, 0.08);
-	}
-
-	.world-wire__header {
-		margin-bottom: clamp(1.5rem, 3vw, 2.2rem);
-	}
-
-	.world-wire__header-meta {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.85rem 1rem;
-		font-family: var(--font-sans);
-		font-size: var(--font-size-xs);
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: var(--tracking-wide);
-		color: var(--color-muted);
-	}
-
-	.world-wire__header-meta p {
-		margin: 0;
-	}
-
-	.world-wire__header-meta a {
-		color: var(--color-text-secondary);
-	}
-
-	.world-wire__layout {
-		display: grid;
-		grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-		gap: clamp(1rem, 2vw, 1.4rem);
-	}
-
-	.world-wire__lead {
-		display: flex;
-		flex-direction: column;
-		padding: clamp(1.4rem, 2.4vw, 2rem);
-		border: 1px solid color-mix(in srgb, var(--color-accent) 16%, var(--color-border));
-		border-radius: 1.8rem;
-		background: rgba(255, 255, 255, 0.62);
-	}
-
-	.world-wire__topic {
-		font-family: var(--font-sans);
-		font-size: var(--font-size-xs);
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: var(--tracking-wide);
-		color: color-mix(in srgb, var(--color-accent) 82%, var(--color-text));
-	}
-
-	.world-wire__topic--muted {
-		color: var(--color-muted);
-	}
-
-	.world-wire__lead-title {
-		margin-top: var(--spacing-4);
-		font-size: clamp(2rem, 3.8vw, 3.2rem);
-		line-height: 0.94;
-		color: var(--color-text);
-	}
-
-	.world-wire__lead-link:hover .world-wire__lead-title,
-	.world-wire__item-link:hover .world-wire__item-title {
-		color: var(--color-text);
-	}
-
-	.world-wire__lead-summary,
-	.world-wire__item-summary {
-		margin-top: var(--spacing-4);
-		font-family: var(--font-sans);
-		line-height: 1.72;
-		color: var(--color-text-secondary);
-	}
-
-	.world-wire__lead .story-meta,
-	.world-wire__item .story-meta {
-		margin-top: var(--spacing-4);
-	}
-
-	.world-wire__cta {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		margin-top: var(--spacing-5);
-		padding: 0.9rem 1.2rem;
-		border-radius: 999px;
-		background: var(--color-accent);
-		color: var(--color-on-accent);
-		font-family: var(--font-sans);
-		font-size: var(--font-size-xs);
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: var(--tracking-wide);
-	}
-
-	.world-wire__cta:hover {
-		background: var(--color-accent-hover);
-		color: var(--color-on-accent);
-	}
-
-	.world-wire__list {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 1rem;
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
-
-	.world-wire__item {
-		display: grid;
-		gap: 0.3rem;
-		padding: 1.2rem;
-		border: 1px solid var(--color-border);
-		border-radius: 1.45rem;
-		background: color-mix(in srgb, white 70%, var(--color-surface));
-		transition:
-			transform var(--transition-fast),
-			border-color var(--transition-fast),
-			box-shadow var(--transition-fast);
-	}
-
-	.world-wire__item:hover {
-		transform: translateY(-2px);
-		border-color: color-mix(in srgb, var(--color-accent) 24%, var(--color-border));
-		box-shadow: 0 16px 36px rgba(17, 18, 30, 0.07);
-	}
-
-	.world-wire__item-title {
-		margin-top: var(--spacing-3);
-		font-size: clamp(1.3rem, 2vw, 1.7rem);
-		line-height: 1.02;
-		color: var(--color-text);
-	}
-
-	.world-wire__attribution {
-		margin-top: var(--spacing-5);
-		font-family: var(--font-sans);
-		font-size: var(--font-size-xs);
-		line-height: 1.7;
-		color: var(--color-muted);
-	}
-
 	.news-desk__header {
 		display: flex;
 		align-items: baseline;
@@ -1522,10 +1184,6 @@ function formatFeedDate(
 		.news-desks__grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
-
-		.world-wire__layout {
-			grid-template-columns: 1fr;
-		}
 	}
 
 	@media (max-width: 900px) {
@@ -1537,8 +1195,7 @@ function formatFeedDate(
 		.briefing-grid,
 		.news-desks__grid,
 		.reading-grid__cards,
-		.newsletter-panel__inner,
-		.world-wire__list {
+		.newsletter-panel__inner {
 			grid-template-columns: 1fr;
 		}
 
