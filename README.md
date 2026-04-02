@@ -82,6 +82,60 @@ Deploy to Cloudflare Workers:
 npm run deploy
 ```
 
+### Deploy your own copy of this template
+
+If you fork or clone this repository for your own publication, update the
+Cloudflare resource names before your first deploy.
+
+Edit:
+
+```text
+wrangler.jsonc
+```
+
+Replace the default values with your own names:
+
+- `name`: your Worker name
+- `d1_databases[0].database_name`: your D1 database name
+- `r2_buckets[0].bucket_name`: your R2 bucket name
+
+Example:
+
+```json
+{
+  "name": "my-paper",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "my-paper-db"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "my-paper-media"
+    }
+  ]
+}
+```
+
+Important:
+
+- The Cloudflare project/Worker name should match `wrangler.jsonc`
+- Keep the binding names as `DB` and `MEDIA`
+- Only rename the resource names, not the bindings
+
+If you deploy from the Cloudflare dashboard using Git:
+
+1. Connect your own GitHub repository
+2. Set the project name to match `wrangler.jsonc`
+3. Use `npm run build` as the build command
+4. Use `npm run deploy` or `npx wrangler deploy` as the deploy command
+5. Create or select your own D1 database and R2 bucket using the same names you configured in `wrangler.jsonc`
+
+After that, pushes to your production branch will deploy your own copy of the
+theme instead of the default `sonderise` resources.
+
 ## Customizing The Theme
 
 ### Update publication identity
