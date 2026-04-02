@@ -1,67 +1,152 @@
-# EmDash Blog Template (Cloudflare)
+# Sonderise
 
-A clean, minimal blog built with [EmDash](https://github.com/emdash-cms/emdash) and deployed on Cloudflare Workers with D1 and R2.
+Sonderise is a newspaper-style publishing theme for [EmDash](https://github.com/emdash-cms/emdash), built with Astro and configured for Cloudflare Workers, D1, and R2.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/emdash-cms/templates/tree/main/blog-cloudflare)
+The default seed ships as **The Sonderise Chronicle**: a warm editorial layout with a masthead, section navigation, front-page lead story, desk-style category blocks, longform article rails, archive search, and dark mode.
 
-![Blog template homepage](https://raw.githubusercontent.com/emdash-cms/emdash/main/assets/templates/blog/latest/homepage-light-desktop.jpg)
+## Theme Highlights
 
-## What's Included
+- Newspaper masthead powered by EmDash site settings, menus, and taxonomies
+- Editorial homepage with a lead story, supporting columns, briefing rail, and category desks
+- Longform article template with byline rail, table of contents, widget sidebar, and related stories
+- Archive and taxonomy pages styled as section fronts instead of generic blog lists
+- Search page backed by EmDash indexed search
+- RSS feed that reads branding from EmDash site settings
+- Token-driven palette and typography in a dedicated theme file
+- Cloudflare-ready EmDash setup with forms and webhook notifier plugins
 
-- Featured post hero on the homepage
-- Post archive with reading time estimates
-- Category and tag archives
-- Full-text search
-- RSS feed
-- SEO metadata and JSON-LD
-- Dark/light mode
-- Forms plugin and webhook notifier
+## EmDash Integration
 
-## Pages
+This theme is not just a CSS skin. It is wired into EmDash’s content model:
 
-| Page | Route |
+- `getSiteSettings()` drives the publication title, tagline, and RSS branding
+- `getMenu("primary")` powers the main navigation
+- `getTaxonomyTerms("category")` powers section navigation and homepage desks
+- `getEntryTerms()` powers per-post section labels and tag displays
+- `getSection()` powers reusable theme-owned editorial blocks like newsletter and author notes
+- `WidgetArea` renders footer and article sidebar widgets
+- `search()` powers the dedicated search page
+
+## Key Files
+
+| File | Purpose |
 |---|---|
-| Homepage | `/` |
-| All posts | `/posts` |
-| Single post | `/posts/:slug` |
-| Category archive | `/category/:slug` |
-| Tag archive | `/tag/:slug` |
-| Search | `/search` |
-| Static pages | `/pages/:slug` |
-| 404 | fallback |
-
-## Screenshots
-
-| | Desktop | Mobile |
-|---|---|---|
-| Light | ![homepage light desktop](https://raw.githubusercontent.com/emdash-cms/emdash/main/assets/templates/blog/latest/homepage-light-desktop.jpg) | ![homepage light mobile](https://raw.githubusercontent.com/emdash-cms/emdash/main/assets/templates/blog/latest/homepage-light-mobile.jpg) |
-| Dark | ![homepage dark desktop](https://raw.githubusercontent.com/emdash-cms/emdash/main/assets/templates/blog/latest/homepage-dark-desktop.jpg) | ![homepage dark mobile](https://raw.githubusercontent.com/emdash-cms/emdash/main/assets/templates/blog/latest/homepage-dark-mobile.jpg) |
-
-## Infrastructure
-
-- **Runtime:** Cloudflare Workers
-- **Database:** D1
-- **Storage:** R2
-- **Framework:** Astro with `@astrojs/cloudflare`
+| `src/layouts/Base.astro` | Shared newspaper shell, masthead, navigation, search, footer, and theme switching |
+| `src/pages/index.astro` | Front page layout with lead story, briefing column, and section desks |
+| `src/pages/posts/[slug].astro` | Longform article layout with metadata rail, TOC, widgets, comments, and related stories |
+| `src/pages/posts/index.astro` | Story archive layout |
+| `src/pages/category/[slug].astro` | Category desk archive |
+| `src/pages/tag/[slug].astro` | Tag archive |
+| `src/pages/search.astro` | Search page backed by EmDash search |
+| `src/styles/theme.css` | Theme tokens for palette, typography, spacing, and dark mode |
+| `seed/seed.json` | Default publication settings, menus, sections, widget areas, and starter content |
 
 ## Local Development
 
+Install dependencies:
+
 ```bash
-pnpm install
-pnpm bootstrap
-pnpm dev
+npm install
+```
+
+Start the local EmDash development environment:
+
+```bash
+npx emdash dev
+```
+
+Useful routes:
+
+- Site: `http://localhost:4321`
+- Admin: `http://localhost:4321/_emdash/admin`
+
+## Validation
+
+Run Astro checks:
+
+```bash
+npm run typecheck
+```
+
+Build for production:
+
+```bash
+npm run build
 ```
 
 ## Deploying
 
+Deploy to Cloudflare Workers:
+
 ```bash
-pnpm deploy
+npm run deploy
 ```
 
-Or click the deploy button above to set up the project in your Cloudflare account.
+## Customizing The Theme
 
-## See Also
+### Update publication identity
 
-- [Node.js variant](../blog) -- same template using SQLite and local file storage
-- [All templates](../)
-- [EmDash documentation](https://github.com/emdash-cms/emdash/tree/main/docs)
+Change the default site title, tagline, footer copy, and theme-owned content sections in:
+
+```text
+seed/seed.json
+```
+
+After changing the seed, run `npx emdash dev` so EmDash can apply the updates locally.
+
+### Retheme the look
+
+Adjust the visual system in:
+
+```text
+src/styles/theme.css
+```
+
+This file controls:
+
+- light and dark color tokens
+- serif, sans, display, and mono font stacks
+- type scale and tracking
+- layout widths and article rails
+- borders, shadows, and masthead proportions
+
+### Change structure
+
+If you want a different editorial layout, start here:
+
+- `src/layouts/Base.astro`
+- `src/pages/index.astro`
+- `src/pages/posts/[slug].astro`
+
+## Included Content Model
+
+The default seed includes:
+
+- `posts` and `pages` collections
+- `category` and `tag` taxonomies
+- bylines for editorial and guest contributors
+- a primary navigation menu
+- footer and article sidebar widget areas
+- reusable sections for newsletter signup and author information
+
+## Stack
+
+- Astro
+- EmDash CMS
+- Cloudflare Workers
+- Cloudflare D1
+- Cloudflare R2
+- `@astrojs/cloudflare`
+- `@emdash-cms/plugin-forms`
+- `@emdash-cms/plugin-webhook-notifier`
+
+## Notes
+
+- This repo is configured for server rendering.
+- CMS images should be rendered with `Image` from `emdash/ui`.
+- EmDash content pages should keep using route-cache hints from query responses.
+
+## Documentation
+
+- [EmDash documentation](https://docs.emdashcms.com)
+- [EmDash source](https://github.com/emdash-cms/emdash)
