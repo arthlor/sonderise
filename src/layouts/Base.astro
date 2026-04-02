@@ -70,12 +70,6 @@ const pageCtx = createPublicPageContext({
 });
 
 const isLoggedIn = !!Astro.locals.user;
-const editionDate = new Intl.DateTimeFormat("en-US", {
-	weekday: "long",
-	month: "long",
-	day: "numeric",
-	year: "numeric",
-}).format(new Date());
 const editionDateShort = new Intl.DateTimeFormat("en-US", {
 	month: "short",
 	day: "numeric",
@@ -91,7 +85,7 @@ const editionIso = new Date().toISOString();
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&display=swap"
 			rel="stylesheet"
 		/>
 		<title>{fullTitle}</title>
@@ -112,51 +106,16 @@ const editionIso = new Date().toISOString();
 	<body>
 		<EmDashBodyStart page={pageCtx} />
 		<header class="site-header">
-			<div class="edition-bar">
-				<div class="edition-bar__inner">
-					<p class="edition-meta">
-						<span class="edition-kicker">Late Edition</span>
-						<time datetime={editionIso}>{editionDate}</time>
+			<div class="site-header__inner">
+				<div class="masthead__brand">
+					<a href="/" class="site-title">{siteTitle}</a>
+					<p class="site-title-meta">
+						<span class="edition-kicker">Independent Journal</span>
+						<time datetime={editionIso}>{editionDateShort}</time>
 					</p>
-					<p class="edition-note">{siteTagline}</p>
 				</div>
-			</div>
 
-			<div class="masthead">
-				<div class="masthead__inner">
-					<div class="masthead__stamp" aria-hidden="true">
-						<span class="stamp-label">Digital Edition</span>
-						<span class="stamp-date">{editionDateShort}</span>
-					</div>
-
-					<div class="masthead__brand">
-						<a href="/" class="site-title">{siteTitle}</a>
-						<p class="masthead__tagline">{siteTagline}</p>
-					</div>
-
-					<div class="masthead__tools">
-						<LiveSearch
-							placeholder="Search the archive"
-							class="site-search"
-							inputClass="site-search-input"
-							resultsClass="site-search-results"
-							resultClass="site-search-result"
-							collections={["posts", "pages"]}
-							expandOnFocus={{ collapsed: "11rem", expanded: "17rem" }}
-						/>
-						{
-							isLoggedIn && (
-								<a href="/_emdash/admin" class="nav-admin">
-									Newsroom
-								</a>
-							)
-						}
-					</div>
-				</div>
-			</div>
-
-			<nav class="site-nav" aria-label="Primary">
-				<div class="site-nav__inner">
+				<nav class="site-nav" aria-label="Primary">
 					<ul class="nav-links">
 						{menuItems.length > 0 ? (
 							menuItems.map((item) => (
@@ -205,19 +164,27 @@ const editionIso = new Date().toISOString();
 						)}
 					</ul>
 
+				</nav>
+
+				<div class="masthead__tools">
+					<LiveSearch
+						placeholder="Search"
+						class="site-search"
+						inputClass="site-search-input"
+						resultsClass="site-search-results"
+						resultClass="site-search-result"
+						collections={["posts", "pages"]}
+						expandOnFocus={{ collapsed: "10rem", expanded: "14rem" }}
+					/>
 					{
-						sectionLinks.length > 0 && (
-							<ul class="section-links" aria-label="Sections">
-								{sectionLinks.map((category) => (
-									<li>
-										<a href={`/category/${category.slug}`}>{category.label}</a>
-									</li>
-								))}
-							</ul>
+						isLoggedIn && (
+							<a href="/_emdash/admin" class="nav-admin">
+								Newsroom
+							</a>
 						)
 					}
 				</div>
-			</nav>
+			</div>
 		</header>
 
 		<main>
@@ -278,8 +245,8 @@ const editionIso = new Date().toISOString();
 
 				<div class="footer-bottom">
 					<p class="footer-copyright">
-						Built on <a href="https://emdashcms.com">EmDash</a>, styled as a
-						modern broadsheet.
+						Built on <a href="https://emdashcms.com">EmDash</a> for thoughtful
+						digital publishing.
 					</p>
 
 					<div class="footer-controls">
@@ -614,15 +581,48 @@ const editionIso = new Date().toISOString();
 				color: var(--color-text);
 				background:
 					radial-gradient(
-						circle at top,
-						color-mix(in srgb, var(--color-accent) 6%, transparent),
+						circle at 0% 0%,
+						color-mix(in srgb, var(--color-accent) 14%, transparent),
 						transparent 34%
 					),
-					var(--color-bg);
+					radial-gradient(
+						circle at 84% 14%,
+						color-mix(in srgb, white 48%, var(--color-accent) 10%),
+						transparent 26%
+					),
+					linear-gradient(
+						180deg,
+						color-mix(in srgb, white 44%, var(--color-bg)) 0%,
+						var(--color-bg) 34%,
+						color-mix(in srgb, var(--color-bg-subtle) 56%, var(--color-bg)) 100%
+					);
+				background-attachment: fixed;
 				-webkit-font-smoothing: antialiased;
 				-moz-osx-font-smoothing: grayscale;
 				min-height: 100vh;
+				position: relative;
 				text-wrap: pretty;
+			}
+
+			body::before {
+				content: "";
+				position: fixed;
+				inset: 0;
+				background:
+					linear-gradient(
+						to right,
+						color-mix(in srgb, var(--color-border-subtle) 58%, transparent) 1px,
+						transparent 1px
+					),
+					linear-gradient(
+						to bottom,
+						color-mix(in srgb, var(--color-border-subtle) 50%, transparent) 1px,
+						transparent 1px
+					);
+				background-size: 72px 72px;
+				opacity: 0.2;
+				pointer-events: none;
+				z-index: 0;
 			}
 
 			a:where(:not([class*="emdash"]):not([class*="ec-"])) {
@@ -675,28 +675,24 @@ const editionIso = new Date().toISOString();
 		</style>
 
 		<style>
+			.site-header,
+			main,
+			.site-footer {
+				position: relative;
+				z-index: 1;
+			}
+
 			.site-header {
 				position: sticky;
 				top: 0;
 				z-index: 100;
-				background:
-					linear-gradient(
-						to bottom,
-						color-mix(in srgb, var(--color-bg) 92%, transparent),
-						color-mix(in srgb, var(--color-bg) 84%, transparent)
-					);
-				backdrop-filter: blur(14px);
-				-webkit-backdrop-filter: blur(14px);
-				border-bottom: 1px solid var(--color-border);
+				background: color-mix(in srgb, var(--color-bg) 86%, transparent);
+				backdrop-filter: blur(16px) saturate(135%);
+				-webkit-backdrop-filter: blur(16px) saturate(135%);
+				border-bottom: 1px solid color-mix(in srgb, var(--color-border) 88%, transparent);
 			}
 
-			.edition-bar {
-				border-bottom: 1px solid var(--color-border-subtle);
-			}
-
-			.edition-bar__inner,
-			.masthead__inner,
-			.site-nav__inner,
+			.site-header__inner,
 			.footer-inner {
 				max-width: var(--wide-width);
 				margin: 0 auto;
@@ -704,131 +700,82 @@ const editionIso = new Date().toISOString();
 				padding-right: var(--spacing-6);
 			}
 
-			.edition-bar__inner {
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				gap: var(--spacing-6);
-				padding-top: var(--spacing-2);
-				padding-bottom: var(--spacing-2);
-				font-family: var(--font-sans);
-				font-size: var(--font-size-xs);
-				text-transform: uppercase;
-				letter-spacing: var(--tracking-wide);
-				color: var(--color-muted);
-			}
-
-			.edition-meta,
-			.edition-note {
-				display: flex;
-				align-items: center;
-				gap: var(--spacing-3);
-			}
-
-			.edition-kicker {
-				font-weight: 700;
-				color: var(--color-text);
-			}
-
-			.edition-note {
-				max-width: 30rem;
-				justify-content: flex-end;
-				text-align: right;
-			}
-
-			.masthead__inner {
+			.site-header__inner {
 				display: grid;
-				grid-template-columns: minmax(0, 180px) 1fr minmax(0, 220px);
+				grid-template-columns: auto minmax(0, 1fr) auto;
 				align-items: center;
-				gap: var(--spacing-6);
-				padding-top: var(--spacing-6);
-				padding-bottom: var(--spacing-6);
-				min-height: calc(var(--nav-height) + var(--spacing-4));
-			}
-
-			.masthead__stamp {
-				display: inline-flex;
-				flex-direction: column;
-				gap: 0.1rem;
-				width: fit-content;
-				padding: var(--spacing-2) var(--spacing-3);
-				border: 1px solid var(--color-border);
-				background: var(--color-surface);
-				font-family: var(--font-sans);
-				text-transform: uppercase;
-				letter-spacing: var(--tracking-wide);
-			}
-
-			.stamp-label {
-				font-size: var(--font-size-xs);
-				font-weight: 700;
-				color: var(--color-text);
-			}
-
-			.stamp-date {
-				font-size: var(--font-size-sm);
-				color: var(--color-muted);
+				gap: 1rem;
+				min-height: var(--nav-height);
+				padding-top: 0.65rem;
+				padding-bottom: 0.65rem;
 			}
 
 			.masthead__brand {
 				display: flex;
 				flex-direction: column;
-				align-items: center;
-				text-align: center;
-				gap: var(--spacing-2);
+				gap: 0.32rem;
+				max-width: 22rem;
 			}
 
 			.site-title {
-				font-family: var(--font-display);
-				font-size: clamp(2.7rem, 6vw, 5.25rem);
-				font-weight: 700;
-				line-height: 0.9;
-				letter-spacing: -0.045em;
+				font-family: var(--font-sans);
+				font-size: clamp(1.15rem, 1.4vw, 1.45rem);
+				font-weight: 800;
+				line-height: 0.98;
+				letter-spacing: -0.035em;
 				color: var(--color-text);
 				text-decoration: none;
 			}
 
 			.site-title:hover {
-				color: var(--color-accent);
+				color: var(--color-text);
 			}
 
-			.masthead__tagline {
-				max-width: 36rem;
+			.site-title-meta {
+				display: flex;
+				align-items: center;
+				flex-wrap: wrap;
+				gap: 0.55rem;
 				font-family: var(--font-sans);
-				font-size: var(--font-size-sm);
+				font-size: 0.72rem;
+				font-weight: 700;
+				letter-spacing: 0.12em;
 				text-transform: uppercase;
-				letter-spacing: var(--tracking-wide);
 				color: var(--color-muted);
+			}
+
+			.edition-kicker {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.45rem;
+				font-weight: 800;
+				color: var(--color-text-secondary);
+			}
+
+			.edition-kicker::before {
+				content: "";
+				width: 0.38rem;
+				height: 0.38rem;
+				border-radius: 999px;
+				background: var(--color-accent);
 			}
 
 			.masthead__tools {
 				display: flex;
 				align-items: center;
 				justify-content: flex-end;
-				gap: var(--spacing-3);
+				gap: 0.65rem;
 			}
 
 			.site-nav {
-				border-top: 1px solid var(--color-border);
-				border-bottom: 1px solid var(--color-border);
+				min-width: 0;
 			}
 
-			.site-nav__inner {
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				gap: var(--spacing-6);
-				padding-top: var(--spacing-3);
-				padding-bottom: var(--spacing-3);
-				font-family: var(--font-sans);
-			}
-
-			.nav-links,
-			.section-links {
+			.nav-links {
 				display: flex;
 				align-items: center;
 				flex-wrap: wrap;
-				gap: var(--spacing-4);
+				gap: 0.9rem;
 				list-style: none;
 			}
 
@@ -836,39 +783,36 @@ const editionIso = new Date().toISOString();
 				position: relative;
 			}
 
-			.nav-links a,
-			.section-links a {
+			.nav-links a {
 				display: inline-flex;
 				align-items: center;
-				font-size: var(--font-size-sm);
-				font-weight: 600;
-				color: var(--color-text);
+				padding: 0.3rem 0.15rem;
+				font-size: 0.8rem;
+				font-weight: 700;
+				letter-spacing: 0.08em;
 				text-transform: uppercase;
-				letter-spacing: var(--tracking-wide);
-			}
-
-			.section-links a {
-				color: var(--color-muted);
+				color: var(--color-text-secondary);
 			}
 
 			.nav-links a:hover,
-			.section-links a:hover {
-				color: var(--color-accent);
+			.nav-links a:focus-visible {
+				color: var(--color-text);
 			}
 
 			.nav-submenu {
 				position: absolute;
-				top: calc(100% + var(--spacing-2));
+				top: calc(100% + 0.7rem);
 				left: 0;
-				min-width: 12rem;
+				min-width: 13rem;
 				padding: var(--spacing-2);
 				list-style: none;
-				background: var(--color-surface);
 				border: 1px solid var(--color-border);
+				border-radius: calc(var(--radius) + 0.45rem);
+				background: color-mix(in srgb, var(--color-surface) 96%, transparent);
 				box-shadow: var(--shadow-dropdown);
 				opacity: 0;
 				visibility: hidden;
-				transform: translateY(6px);
+				transform: translateY(8px);
 				transition:
 					opacity var(--transition-fast),
 					transform var(--transition-fast),
@@ -888,30 +832,38 @@ const editionIso = new Date().toISOString();
 
 			.nav-submenu a {
 				width: 100%;
-				padding: var(--spacing-2);
+				padding: 0.7rem 0.8rem;
+				border-radius: calc(var(--radius) - 0.25rem);
 				font-size: var(--font-size-sm);
-				font-weight: 500;
-				text-transform: none;
+				font-weight: 600;
 				letter-spacing: normal;
+				text-transform: none;
 			}
 
 			.nav-admin {
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
-				padding: 0.6rem 0.9rem;
-				border: 1px solid var(--color-border);
-				background: var(--color-surface);
+				padding: 0.72rem 0.92rem;
+				border: 1px solid color-mix(in srgb, var(--color-accent) 30%, var(--color-border));
+				border-radius: 999px;
+				background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
 				font-family: var(--font-sans);
 				font-size: var(--font-size-xs);
-				font-weight: 700;
+				font-weight: 800;
 				text-transform: uppercase;
 				letter-spacing: var(--tracking-wide);
 				color: var(--color-text);
+				transition:
+					transform var(--transition-fast),
+					border-color var(--transition-fast),
+					background var(--transition-fast);
 			}
 
 			.nav-admin:hover {
+				transform: translateY(-1px);
 				border-color: var(--color-accent);
+				background: color-mix(in srgb, var(--color-accent) 18%, var(--color-surface));
 			}
 
 			.site-search {
@@ -921,16 +873,20 @@ const editionIso = new Date().toISOString();
 			}
 
 			:global(.site-search-input) {
-				width: var(--search-input-width);
-				padding: 0.7rem var(--spacing-3);
+				width: 100%;
+				min-height: 2.45rem;
+				padding: 0.65rem 0.9rem;
 				border: 1px solid var(--color-border);
-				background: var(--color-surface);
+				border-radius: 999px;
+				background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+				box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 				color: var(--color-text);
 				font-family: var(--font-sans);
 				font-size: var(--font-size-sm);
 				transition:
 					border-color var(--transition-fast),
-					box-shadow var(--transition-fast);
+					box-shadow var(--transition-fast),
+					background var(--transition-fast);
 			}
 
 			:global(.site-search-input)::placeholder {
@@ -941,6 +897,7 @@ const editionIso = new Date().toISOString();
 			:global(.site-search-input):focus-visible {
 				outline: none;
 				border-color: var(--color-accent) !important;
+				background: color-mix(in srgb, var(--color-surface) 96%, transparent);
 				box-shadow: 0 0 0 3px var(--color-accent-ring);
 			}
 
@@ -949,10 +906,11 @@ const editionIso = new Date().toISOString();
 				top: calc(100% + var(--spacing-2));
 				left: 0;
 				right: 0;
-				max-height: 400px;
+				max-height: 26rem;
 				overflow-y: auto;
 				border: 1px solid var(--color-border);
-				background: var(--color-surface);
+				border-radius: calc(var(--radius) + 0.45rem);
+				background: color-mix(in srgb, var(--color-surface) 96%, transparent);
 				box-shadow: var(--shadow-dropdown);
 				z-index: 20;
 			}
@@ -968,7 +926,7 @@ const editionIso = new Date().toISOString();
 
 			:global(.site-search-result) {
 				display: block;
-				padding: var(--spacing-3) var(--spacing-4);
+				padding: 0.95rem 1rem;
 				border-bottom: 1px solid var(--color-border-subtle);
 				color: var(--color-text);
 				font-family: var(--font-sans);
@@ -981,7 +939,7 @@ const editionIso = new Date().toISOString();
 			:global(.site-search-result:hover),
 			:global(.site-search-result:focus),
 			:global(.site-search-result.focused) {
-				background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface));
+				background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
 				outline: none;
 			}
 
@@ -993,7 +951,7 @@ const editionIso = new Date().toISOString();
 
 			:global(.site-search-result .emdash-live-search-result-collection) {
 				display: block;
-				margin-top: 0.1rem;
+				margin-top: 0.15rem;
 				font-size: var(--font-size-xs);
 				text-transform: uppercase;
 				letter-spacing: var(--tracking-wide);
@@ -1015,23 +973,35 @@ const editionIso = new Date().toISOString();
 			}
 
 			main {
-				min-height: calc(100vh - var(--nav-height) - 360px);
+				min-height: calc(100vh - var(--nav-height) - 25rem);
 			}
 
 			.site-footer {
 				margin-top: var(--spacing-20);
-				border-top: var(--rule-thick) double var(--color-border);
-				background: color-mix(in srgb, var(--color-bg-subtle) 80%, var(--color-bg));
+				padding-bottom: var(--spacing-6);
 			}
 
 			.footer-inner {
-				padding-top: var(--spacing-12);
+				padding-top: clamp(2.8rem, 5vw, 4.5rem);
 				padding-bottom: var(--spacing-8);
+				border-top: 1px solid var(--color-border);
+				border-radius: 2.5rem 2.5rem 0 0;
+				background:
+					radial-gradient(
+						circle at top right,
+						color-mix(in srgb, var(--color-accent) 12%, transparent),
+						transparent 28%
+					),
+					color-mix(in srgb, var(--color-bg-subtle) 72%, white 28%);
+				box-shadow: 0 -20px 60px rgba(17, 18, 30, 0.06);
 			}
 
 			.footer-grid {
 				display: grid;
-				grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)) minmax(0, 1.2fr);
+				grid-template-columns:
+					minmax(0, 1.4fr)
+					repeat(3, minmax(0, 0.9fr))
+					minmax(0, 1.1fr);
 				gap: var(--spacing-8);
 				align-items: start;
 			}
@@ -1046,7 +1016,7 @@ const editionIso = new Date().toISOString();
 			.footer-heading,
 			.footer-widgets-section :global(.widget__title) {
 				font-size: var(--font-size-xs);
-				font-weight: 700;
+				font-weight: 800;
 				text-transform: uppercase;
 				letter-spacing: var(--tracking-wider);
 				color: var(--color-muted);
@@ -1056,13 +1026,14 @@ const editionIso = new Date().toISOString();
 				display: inline-block;
 				margin-top: var(--spacing-3);
 				font-family: var(--font-display);
-				font-size: var(--font-size-2xl);
-				line-height: 0.95;
+				font-size: clamp(2rem, 4vw, 2.8rem);
+				line-height: 0.92;
 				color: var(--color-text);
 			}
 
 			.footer-tagline {
 				margin-top: var(--spacing-4);
+				max-width: 24rem;
 				font-size: var(--font-size-sm);
 				line-height: var(--leading-relaxed);
 				color: var(--color-text-secondary);
@@ -1077,7 +1048,7 @@ const editionIso = new Date().toISOString();
 			}
 
 			.footer-links li + li {
-				margin-top: var(--spacing-2);
+				margin-top: 0.7rem;
 			}
 
 			.footer-links a {
@@ -1121,6 +1092,7 @@ const editionIso = new Date().toISOString();
 
 			.footer-copyright {
 				font-size: var(--font-size-sm);
+				line-height: 1.55;
 				color: var(--color-muted);
 			}
 
@@ -1136,33 +1108,37 @@ const editionIso = new Date().toISOString();
 
 			.theme-switcher {
 				display: flex;
-				gap: var(--spacing-1);
-				padding: var(--spacing-1);
+				gap: 0.35rem;
+				padding: 0.35rem;
 				border: 1px solid var(--color-border);
-				background: var(--color-surface);
+				border-radius: 999px;
+				background: color-mix(in srgb, var(--color-surface) 88%, transparent);
 			}
 
 			.theme-btn {
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				width: 2rem;
-				height: 2rem;
+				width: 2.35rem;
+				height: 2.35rem;
 				border: none;
+				border-radius: 999px;
 				background: transparent;
 				color: var(--color-muted);
 				cursor: pointer;
 				transition:
+					transform var(--transition-fast),
 					background var(--transition-fast),
 					color var(--transition-fast);
 			}
 
 			.theme-btn:hover {
+				transform: translateY(-1px);
 				color: var(--color-text);
 			}
 
 			.theme-btn.active {
-				background: var(--color-bg);
+				background: color-mix(in srgb, white 60%, var(--color-bg));
 				color: var(--color-text);
 				box-shadow: var(--shadow-btn-active);
 			}
@@ -1172,19 +1148,18 @@ const editionIso = new Date().toISOString();
 				height: 16px;
 			}
 
-			@media (max-width: 1100px) {
-				.masthead__inner {
-					grid-template-columns: minmax(0, 160px) 1fr;
+			@media (max-width: 1180px) {
+				.site-header__inner {
+					grid-template-columns: auto minmax(0, 1fr);
 				}
 
 				.masthead__tools {
-					grid-column: span 2;
-					justify-content: center;
+					justify-self: end;
 				}
 
-				.site-nav__inner {
-					flex-direction: column;
-					align-items: flex-start;
+				.site-nav {
+					grid-column: 1 / -1;
+					order: 3;
 				}
 
 				.footer-grid {
@@ -1192,41 +1167,31 @@ const editionIso = new Date().toISOString();
 				}
 			}
 
-			@media (max-width: 780px) {
-				.edition-bar__inner {
-					flex-direction: column;
-					align-items: flex-start;
+			@media (max-width: 860px) {
+				.site-header__inner {
+					grid-template-columns: minmax(0, 1fr) auto;
 				}
 
-				.edition-note {
+				.site-nav {
+					overflow-x: auto;
+				}
+
+				.nav-links {
+					flex-wrap: nowrap;
+					overflow-x: auto;
+					padding-bottom: 0.25rem;
+					width: 100%;
 					justify-content: flex-start;
-					text-align: left;
+					scrollbar-width: none;
 				}
 
-				.masthead__inner {
-					grid-template-columns: 1fr;
-					text-align: center;
-				}
-
-				.masthead__stamp,
-				.masthead__tools {
-					justify-self: center;
-				}
-
-				.site-nav__inner {
-					align-items: stretch;
-				}
-
-				.nav-links,
-				.section-links {
-					gap: var(--spacing-3);
+				.nav-links::-webkit-scrollbar {
+					display: none;
 				}
 			}
 
-			@media (max-width: 600px) {
-				.edition-bar__inner,
-				.masthead__inner,
-				.site-nav__inner,
+			@media (max-width: 640px) {
+				.site-header__inner,
 				.footer-inner {
 					padding-left: var(--spacing-4);
 					padding-right: var(--spacing-4);
@@ -1236,13 +1201,31 @@ const editionIso = new Date().toISOString();
 					position: relative;
 				}
 
-				.site-title {
-					font-size: clamp(2.25rem, 14vw, 3.2rem);
+				.site-header__inner {
+					grid-template-columns: 1fr;
+					gap: 0.75rem;
 				}
 
-				.site-search,
-				:global(.site-search-input) {
-					width: min(100%, 16rem);
+				.masthead__brand {
+					max-width: none;
+				}
+
+				.masthead__tools {
+					justify-content: space-between;
+					order: 2;
+				}
+
+				.site-nav {
+					order: 3;
+				}
+
+				.site-search {
+					width: min(100%, 11rem);
+				}
+
+				.nav-admin {
+					width: auto;
+					white-space: nowrap;
 				}
 
 				.footer-grid {

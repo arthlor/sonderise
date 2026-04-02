@@ -110,8 +110,26 @@ const formattedDate = date
 	.post-card {
 		display: flex;
 		flex-direction: column;
-		padding-top: var(--spacing-5);
-		border-top: 1px solid var(--color-border);
+		padding: 1.1rem;
+		border: 1px solid var(--color-border);
+		border-radius: 1.75rem;
+		background:
+			linear-gradient(
+				180deg,
+				color-mix(in srgb, white 78%, var(--color-surface)),
+				color-mix(in srgb, var(--color-surface) 92%, transparent)
+			);
+		box-shadow: 0 18px 40px rgba(17, 18, 30, 0.06);
+		transition:
+			transform var(--transition-fast),
+			border-color var(--transition-fast),
+			box-shadow var(--transition-fast);
+	}
+
+	.post-card:hover {
+		transform: translateY(-3px);
+		border-color: color-mix(in srgb, var(--color-accent) 24%, var(--color-border));
+		box-shadow: 0 24px 48px rgba(17, 18, 30, 0.1);
 	}
 
 	.card-link {
@@ -124,6 +142,7 @@ const formattedDate = date
 		aspect-ratio: 4 / 3;
 		overflow: hidden;
 		border: 1px solid var(--color-border);
+		border-radius: 1.2rem;
 		background: color-mix(in srgb, var(--color-surface) 92%, transparent);
 		margin-bottom: var(--spacing-4);
 	}
@@ -142,11 +161,12 @@ const formattedDate = date
 	.card-placeholder {
 		aspect-ratio: 4 / 3;
 		border: 1px solid var(--color-border);
+		border-radius: 1.2rem;
 		background:
 			linear-gradient(
 				135deg,
-				color-mix(in srgb, var(--color-accent) 7%, transparent),
-				var(--color-surface)
+				color-mix(in srgb, var(--color-accent) 14%, transparent),
+				color-mix(in srgb, white 72%, var(--color-surface))
 			);
 		margin-bottom: var(--spacing-4);
 	}
@@ -183,22 +203,23 @@ const formattedDate = date
 	}
 
 	.card-title {
-		font-size: clamp(1.7rem, 3vw, 2.2rem);
+		font-size: clamp(1.7rem, 3vw, 2.3rem);
 		font-weight: 600;
-		line-height: 0.98;
+		line-height: 0.95;
 		letter-spacing: var(--tracking-snug);
-		margin-bottom: var(--spacing-2);
+		margin-bottom: var(--spacing-3);
 		transition: color var(--transition-fast);
 		color: var(--color-text);
 	}
 
 	.card-link:hover .card-title {
-		color: var(--color-accent);
+		color: var(--color-text);
 	}
 
 	.card-excerpt {
-		font-size: var(--font-size-base);
-		line-height: 1.7;
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		line-height: 1.75;
 		color: var(--color-text-secondary);
 		display: -webkit-box;
 		-webkit-line-clamp: 3;
@@ -210,18 +231,19 @@ const formattedDate = date
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--spacing-2);
-		margin-top: var(--spacing-3);
+		margin-top: var(--spacing-4);
 	}
 
 	.card-tag {
 		display: inline-block;
-		padding: 0.35rem 0.6rem;
+		padding: 0.45rem 0.7rem;
 		border: 1px solid var(--color-border);
+		border-radius: 999px;
 		font-size: var(--font-size-xs);
 		font-family: var(--font-sans);
 		font-weight: 700;
 		color: var(--color-muted);
-		background: var(--color-surface);
+		background: color-mix(in srgb, var(--color-surface) 88%, white 12%);
 		text-decoration: none;
 		transition:
 			color var(--transition-fast),
@@ -292,5 +314,17 @@ const formattedDate = date
 		border-radius: var(--radius);
 		pointer-events: none;
 		z-index: 10;
+	}
+
+	@media (max-width: 640px) {
+		.post-card {
+			padding: 0.95rem;
+			border-radius: 1.35rem;
+		}
+
+		.card-image,
+		.card-placeholder {
+			border-radius: 1rem;
+		}
 	}
 </style>
