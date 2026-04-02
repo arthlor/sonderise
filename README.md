@@ -96,6 +96,7 @@ wrangler.jsonc
 Replace the default values with your own names:
 
 - `name`: your Worker name
+- `kv_namespaces[0].id`: your session KV namespace ID
 - `d1_databases[0].database_name`: your D1 database name
 - `r2_buckets[0].bucket_name`: your R2 bucket name
 
@@ -104,6 +105,12 @@ Example:
 ```json
 {
   "name": "my-paper",
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "your-session-kv-id"
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
@@ -122,8 +129,9 @@ Example:
 Important:
 
 - The Cloudflare project/Worker name should match `wrangler.jsonc`
-- Keep the binding names as `DB` and `MEDIA`
+- Keep the binding names as `SESSION`, `DB`, and `MEDIA`
 - Only rename the resource names, not the bindings
+- The session KV namespace should be created in your own Cloudflare account, then its ID should be pasted into `wrangler.jsonc`
 
 If you deploy from the Cloudflare dashboard using Git:
 
@@ -135,6 +143,12 @@ If you deploy from the Cloudflare dashboard using Git:
 
 After that, pushes to your production branch will deploy your own copy of the
 theme instead of the default `sonderise` resources.
+
+Why the `SESSION` ID matters:
+
+- Astro uses a KV namespace for session storage on Cloudflare
+- If you leave the session namespace unpinned, Workers Builds may try to create it again on later deploys
+- Adding the namespace `id` to `wrangler.jsonc` makes repeated deploys stable
 
 ### Optional: enable sandboxed marketplace plugins later
 
